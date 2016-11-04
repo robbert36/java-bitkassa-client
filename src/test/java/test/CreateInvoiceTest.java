@@ -5,6 +5,7 @@ import me.vante.bitkassa.controller.Bitkassa;
 import me.vante.bitkassa.model.APIException;
 import me.vante.bitkassa.model.InvoiceRequest;
 import me.vante.bitkassa.model.Invoice;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.math.BigInteger;
  * Created by robbertcoeckelbergh on 3/11/16.
  */
 
+
 public class CreateInvoiceTest {
     private static final String API_SECRET = "abcdefgh";
     private static final String API_URL = "https://localhost:80/api";
@@ -22,7 +24,7 @@ public class CreateInvoiceTest {
 
     private static final String MERCHANT_ID = "merchant";
 
-    @Test
+
     public void createInvoiceFakeTest() {
         //Bitkassa bitkassa = new Bitkassa(MERCHANT_ID, API_SECRET, API_URL);
         Bitkassa bitkassa = new Bitkassa(MERCHANT_ID, API_SECRET, API_URL);
