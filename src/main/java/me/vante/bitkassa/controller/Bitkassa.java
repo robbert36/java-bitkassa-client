@@ -5,14 +5,12 @@ import me.vante.bitkassa.model.APIException;
 import me.vante.bitkassa.model.Actions;
 import me.vante.bitkassa.model.InvoiceRequest;
 import me.vante.bitkassa.model.Invoice;
+import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.util.encoders.Base64;
 import org.restlet.Client;
 import org.restlet.Request;
 import org.restlet.Response;
-import org.restlet.data.MediaType;
-import org.restlet.data.Method;
-import org.restlet.data.Preference;
-import org.restlet.data.Protocol;
+import org.restlet.data.*;
 import org.restlet.representation.Representation;
 
 import java.io.IOException;
@@ -20,15 +18,13 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
  * Created by robbertcoeckelbergh on 2/11/16.
  */
 public class Bitkassa {
-    public static final String BITKASSA_URL = "  https://www.bitkassa.nl/api/v1";
+    public static final String BITKASSA_URL = "https://www.bitkassa.nl/api/v1";
 
     private String _merchantId = "";
     private String _secretAPIKey = "";
@@ -49,12 +45,14 @@ public class Bitkassa {
     }
 
     public Invoice createInvoice(InvoiceRequest invoiceRequest) throws APIException, IOException {
-        invoiceRequest.set_action(Actions.START_PAYMENT);
-        invoiceRequest.set_merchant_id(_merchantId);
+        invoiceRequest.setAction(Actions.START_PAYMENT);
+        invoiceRequest.setMerchant_id(_merchantId);
 
         Representation representation = callBitkassaApi(invoiceRequest);
+        representation.
         String response_text = representation.getText();
 
+        System.out.println("response_text: " + response_text);
         ObjectMapper mapper = new ObjectMapper();
         Invoice invoice = mapper.readValue(representation.getText(), Invoice.class);
 
@@ -92,36 +90,36 @@ public class Bitkassa {
         }
 
         byte[] digest = md.digest();
-        String digestString = new String(Base64.encode(digest));
+        String digestString = Hex.encodeHexString(digest);
 
         return digestString + unixtime;
     }
 
 
     Representation callBitkassaApi(Object object) throws IOException, APIException {
+        ObjectMapper mapper = new ObjectMapper();
+
+        byte[] dataJSONBytes = mapper.writeValueAsBytes(object);
+        String dataJSONRaw = new String(dataJSONBytes);
+        String dataJSON = new String(Base64.encode(dataJSONBytes));
+        System.out.println("DataJSONRaw: " + dataJSONRaw);
+        System.out.println("DataJSON: " + dataJSON);
+
+        String authentication = generateAuthentication(_secretAPIKey, dataJSONRaw);
+        System.out.println("Authentication: " + authentication);
+
         Client client = new Client(Protocol.HTTPS);
         Request request = new Request();
 
-        request.setResourceRef(_apiUrl);
+        Reference reference = new Reference(_apiUrl);
+        reference.addQueryParameter("p", dataJSON);
+        reference.addQueryParameter("a", authentication);
+
+        request.setResourceRef(reference);
         request.setMethod(Method.POST);
 
         request.getClientInfo().getAcceptedMediaTypes().add(new Preference<MediaType>(MediaType.APPLICATION_JSON));
 
-        ObjectMapper mapper = new ObjectMapper();
-
-        byte[] dataJSONBytes = mapper.writeValueAsBytes(object);
-        String dataJSON = new String(Base64.encode(dataJSONBytes));
-
-        System.out.println("invoiceJSON: " + dataJSON);
-
-        String authentication = generateAuthentication(_secretAPIKey, dataJSON);
-        System.out.println("Authentication: " + authentication);
-
-        Map<String, Object> attributes = new HashMap<String, Object>();
-        attributes.put("p", dataJSON);
-        attributes.put("a", authentication);
-
-        request.setAttributes(attributes);
         Response response = client.handle(request);
         Representation representation = response.getEntity();
         if(representation == null) {
@@ -130,7 +128,7 @@ public class Bitkassa {
 
         representation.write(System.out);
 
-        return null;
+        return representation;
     }
 
 }

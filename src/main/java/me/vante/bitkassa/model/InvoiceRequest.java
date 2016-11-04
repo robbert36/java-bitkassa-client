@@ -1,119 +1,122 @@
 package me.vante.bitkassa.model;
 
 import lombok.Data;
+
+import java.math.BigInteger;
+
 /**
  * Created by robbertcoeckelbergh on 2/11/16.
  */
 
 @Data
 public class InvoiceRequest {
-    private String _action;
-    private String _merchant_id;
-    private String _currency;
-    private Double _amount;
-    private String _description;
-    private String _return_url;
-    private String _update_url;
-    private String _meta_info;
+    private String action;
+    private String merchant_id;
+    private String currency;
+    private BigInteger amount; //value in satoshi
+    private String description;
+    private String return_url;
+    private String update_url;
+    private String meta_info;
 
-    public InvoiceRequest(Double _amount, String _currency) {
-        this._amount = _amount;
-        this._currency = _currency;
+    public InvoiceRequest(BigInteger amount, String currency) {
+        this.amount = amount;
+        this.currency = currency;
     }
 
-    public InvoiceRequest(Double _amount, String _currency, String _description) {
-        this._amount = _amount;
-        this._currency = _currency;
-        this._description = _description;
+    public InvoiceRequest(BigInteger amount, String currency, String description) {
+        this.amount = amount;
+        this.currency = currency;
+        this.description = description;
     }
 
-    public InvoiceRequest(Double _amount, String _currency, String _description, String _return_url) {
-        this._amount = _amount;
-        this._currency = _currency;
-        this._description = _description;
-        this._return_url = _return_url;
+    public InvoiceRequest(BigInteger amount, String currency, String description, String return_url) {
+        this.amount = amount;
+        this.currency = currency;
+        this.description = description;
+        this.return_url = return_url;
     }
 
-    public InvoiceRequest(Double _amount, String _currency, String _description, String _return_url, String _update_url) {
-        this._amount = _amount;
-        this._currency = _currency;
-        this._description = _description;
-        this._return_url = _return_url;
-        this._update_url = _update_url;
+    public InvoiceRequest(BigInteger amount, String currency, String description, String return_url, String update_url) {
+        this.amount = amount;
+        this.currency = currency;
+        this.description = description;
+        this.return_url = return_url;
+        this.update_url = update_url;
     }
 
-    public InvoiceRequest(Double _amount, String _currency, String _description, String _return_url, String _update_url, String _meta_info) {
-        this._amount = _amount;
-        this._currency = _currency;
-        this._description = _description;
-        this._return_url = _return_url;
-        this._update_url = _update_url;
-        this._meta_info = _meta_info;
+    public InvoiceRequest(BigInteger amount, String currency, String description, String return_url, String update_url, String meta_info) {
+        this.amount = amount;
+        this.currency = currency;
+        this.description = description;
+        this.return_url = return_url;
+        this.update_url = update_url;
+        this.meta_info = meta_info;
     }
 
 
     //Getters and Setters
-    public void set_action(String _action) {
-        this._action = _action;
+    public void setAction(String action) {
+        this.action = action;
     }
 
-    public void set_merchant_id(String _merchant_id) {
-        this._merchant_id = _merchant_id;
+    public void setMerchant_id(String merchant_id) {
+        this.merchant_id = merchant_id;
     }
 
-    public void set_currency(String _currency) {
-        this._currency = _currency;
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 
-    public void set_amount(Double _amount) {
-        this._amount = _amount;
+    public void setAmount(BigInteger amount) {
+        this.amount = amount;
     }
 
-    public void set_description(String _description) {
-        this._description = _description;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public void set_return_url(String _return_url) {
-        this._return_url = _return_url;
+    public void setReturn_url(String return_url) {
+        this.return_url = return_url;
     }
 
-    public void set_update_url(String _update_url) {
-        this._update_url = _update_url;
+    public void setUpdate_url(String update_url) {
+        this.update_url = update_url;
     }
 
-    public void set_meta_info(String _meta_info) {
-        this._meta_info = _meta_info;
+    public void setMeta_info(String meta_info) {
+        this.meta_info = meta_info;
     }
 
-    public String get_action() {
-        return _action;
+    public String getAction() {
+        return action;
     }
 
-    public String get_merchant_id() {
-        return _merchant_id;
+    public String getMerchant_id() {
+        return merchant_id;
     }
 
-    public String get_currency() {
-        return _currency;
+    public String getCurrency() {
+        return currency;
     }
 
-    public Double get_amount() {
-        return _amount;
+    public BigInteger getAmount() {
+        return amount;
     }
 
-    public String get_description() {
-        return _description;
+    public String getDescription() {
+        return description;
     }
 
-    public String get_return_url() {
-        return _return_url;
+    public String getReturn_url() {
+        return return_url;
     }
 
-    public String get_update_url() {
-        return _update_url;
+    public String getUpdate_url() {
+        return update_url;
     }
 
-    public String get_meta_info() {
-        return _meta_info;
+    public String getMeta_info() {
+        return meta_info;
     }
 }
