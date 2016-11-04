@@ -1,6 +1,5 @@
 package me.vante.bitkassa.model;
 
-import java.io.IOException;
 
 /**
  * Created by robbertcoeckelbergh on 3/11/16.

@@ -3,7 +3,6 @@ package me.vante.bitkassa.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.vante.bitkassa.model.*;
-import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.util.encoders.Base64;
 import org.restlet.Client;
 import org.restlet.Request;
@@ -12,11 +11,8 @@ import org.restlet.data.*;
 import org.restlet.representation.Representation;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Date;
+
 
 /**
  * Created by robbertcoeckelbergh on 2/11/16.
