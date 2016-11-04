@@ -1,5 +1,6 @@
 package me.vante.bitkassa.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.vante.bitkassa.model.*;
 import org.apache.commons.codec.binary.Hex;
@@ -43,7 +44,7 @@ public class Bitkassa {
         _apiUrl = apiUrl;
     }
 
-    public Invoice createInvoice(InvoiceRequest invoiceRequest) throws APIException, IOException {
+    public Invoice createInvoice(InvoiceRequest invoiceRequest) throws APIException {
         invoiceRequest.setAction(Action.START_PAYMENT);
         invoiceRequest.setMerchant_id(_merchantId);
 
@@ -58,14 +59,26 @@ public class Bitkassa {
             throw new APIException("The resulting representation of the api call is null");
         }
 
-        String response_text = representation.getText();
+        String response_text = null;
+        try {
+            response_text = representation.getText();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new APIException(e.getMessage());
+        }
         if (response_text == null) {
             throw new APIException("Could not extract the text from the representation");
         }
 
         System.out.println("response_text: " + response_text);
         ObjectMapper mapper = new ObjectMapper();
-        Invoice invoice = mapper.readValue(response_text, Invoice.class);
+        Invoice invoice = null;
+        try {
+            invoice = mapper.readValue(response_text, Invoice.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new APIException(e.getMessage());
+        }
 
         if (invoice.getSuccess() != true)
         {
@@ -87,7 +100,7 @@ public class Bitkassa {
         return authenticated;
     }
 
-    public PaymentStatus getPaymentStatus(String paymentId) throws APIException, IOException {
+    public PaymentStatus getPaymentStatus(String paymentId) throws APIException {
         if (paymentId == null)
         {
             throw new APIException("Invalid input to get payment status");
@@ -104,14 +117,27 @@ public class Bitkassa {
             throw new APIException("The resulting representation of the api call is null");
         }
 
-        String response_text = representation.getText();
+        String response_text = null;
+        try {
+            response_text = representation.getText();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new APIException(e.getMessage());
+        }
+
         if (response_text == null) {
             throw new APIException("Could not extract the text from the representation");
         }
-
         System.out.println("response_text: " + response_text);
+
         ObjectMapper mapper = new ObjectMapper();
-        PaymentStatus status = mapper.readValue(response_text, PaymentStatus.class);
+        PaymentStatus status = null;
+        try {
+            status = mapper.readValue(response_text, PaymentStatus.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new APIException(e.getMessage());
+        }
 
         if (status.getSuccess() != true)
         {
@@ -121,51 +147,26 @@ public class Bitkassa {
         return status;
     }
 
-    private String generateAuthentication(String data, String unixtime) {
-        MessageDigest md;
-
-        StringBuilder builder = new StringBuilder();
-        builder.append(_secretAPIKey);
-        builder.append(data);
-        builder.append(unixtime);
-
-        System.out.println("Authentication digest: "+ builder.toString());
-
-        try {
-            md = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return "";
-        }
-
-        try {
-            md.update(builder.toString().getBytes("UTF-8")); // Change this to "UTF-16" if needed
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            return "";
-        }
-
-        byte[] digest = md.digest();
-        String digestString = Hex.encodeHexString(digest);
-
-        return digestString + unixtime;
+    public String generateAuthentication(String data) {
+        return Authentication.generateAuthentication(_secretAPIKey, data);
     }
 
-    private String generateAuthentication(String data) {
-        String unixtime;
-
-        Date now = new Date();
-        Long longTime = new Long(now.getTime()/1000);
-        unixtime = longTime.toString();
-
-        return generateAuthentication(data, unixtime);
+    public String generateAuthentication(String data, String unixtime) {
+        return Authentication.generateAuthentication(_secretAPIKey, data, unixtime);
     }
 
 
-    Representation callBitkassaApi(Object object) throws IOException, APIException {
+    Representation callBitkassaApi(Object object) throws APIException {
         ObjectMapper mapper = new ObjectMapper();
 
-        byte[] dataJSONBytes = mapper.writeValueAsBytes(object);
+        byte[] dataJSONBytes = new byte[0];
+        try {
+            dataJSONBytes = mapper.writeValueAsBytes(object);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new APIException(e.getMessage());
+        }
+
         String dataJSONRaw = new String(dataJSONBytes);
         String dataJSON = new String(Base64.encode(dataJSONBytes));
         System.out.println("DataJSONRaw: " + dataJSONRaw);

@@ -33,10 +33,6 @@ public class CreateInvoiceTest {
             Invoice response = bitkassa.createInvoice(invoiceRequest);
         } catch (APIException e) {
             e.printStackTrace();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
