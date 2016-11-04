@@ -1,14 +1,10 @@
 package test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import me.vante.bitkassa.controller.Bitkassa;
-import me.vante.bitkassa.model.APIException;
+import me.vante.bitkassa.model.BitkassaException;
 import me.vante.bitkassa.model.InvoiceRequest;
 import me.vante.bitkassa.model.Invoice;
-import org.junit.Ignore;
-import org.junit.Test;
 
-import java.io.IOException;
 import java.math.BigInteger;
 
 /**
@@ -31,7 +27,7 @@ public class CreateInvoiceTest {
         InvoiceRequest invoiceRequest = new InvoiceRequest(new BigInteger("10000"), "BTC", "Testinvoice", RETURN_URL, UPDATE_URL, "TestMetainfo");
         try {
             Invoice response = bitkassa.createInvoice(invoiceRequest);
-        } catch (APIException e) {
+        } catch (BitkassaException e) {
             e.printStackTrace();
         }
     }

@@ -40,19 +40,19 @@ public class Bitkassa {
         _apiUrl = apiUrl;
     }
 
-    public Invoice createInvoice(InvoiceRequest invoiceRequest) throws APIException {
+    public Invoice createInvoice(InvoiceRequest invoiceRequest) throws BitkassaException {
         invoiceRequest.setAction(Action.START_PAYMENT);
         invoiceRequest.setMerchant_id(_merchantId);
 
         //Input check
         if (invoiceRequest.getAmount() == null || invoiceRequest.getAmount().compareTo(BigInteger.ZERO) == -1 ||
                 invoiceRequest.getCurrency() == null || (! invoiceRequest.getCurrency().equals("BTC") && ! invoiceRequest.getCurrency().equals("EUR"))) {
-            throw new APIException("Invalid input to create an invoice");
+            throw new BitkassaException("Invalid input to create an invoice");
         }
 
         Representation representation = callBitkassaApi(invoiceRequest);
         if (representation == null) {
-            throw new APIException("The resulting representation of the api call is null");
+            throw new BitkassaException("The resulting representation of the api call is null");
         }
 
         String response_text = null;
@@ -60,10 +60,10 @@ public class Bitkassa {
             response_text = representation.getText();
         } catch (IOException e) {
             e.printStackTrace();
-            throw new APIException(e.getMessage());
+            throw new BitkassaException(e.getMessage());
         }
         if (response_text == null) {
-            throw new APIException("Could not extract the text from the representation");
+            throw new BitkassaException("Could not extract the text from the representation");
         }
 
         System.out.println("response_text: " + response_text);
@@ -73,12 +73,12 @@ public class Bitkassa {
             invoice = mapper.readValue(response_text, Invoice.class);
         } catch (IOException e) {
             e.printStackTrace();
-            throw new APIException(e.getMessage());
+            throw new BitkassaException(e.getMessage());
         }
 
         if (invoice.getSuccess() != true)
         {
-            throw new APIException(invoice.getError());
+            throw new BitkassaException(invoice.getError());
         }
 
         return invoice;
@@ -96,10 +96,10 @@ public class Bitkassa {
         return authenticated;
     }
 
-    public PaymentStatus getPaymentStatus(String paymentId) throws APIException {
+    public PaymentStatus getPaymentStatus(String paymentId) throws BitkassaException {
         if (paymentId == null)
         {
-            throw new APIException("Invalid input to get payment status");
+            throw new BitkassaException("Invalid input to get payment status");
         }
 
         PaymentStatusRequest request = new PaymentStatusRequest();
@@ -110,7 +110,7 @@ public class Bitkassa {
         Representation representation = callBitkassaApi(request);
 
         if (representation == null) {
-            throw new APIException("The resulting representation of the api call is null");
+            throw new BitkassaException("The resulting representation of the api call is null");
         }
 
         String response_text = null;
@@ -118,11 +118,11 @@ public class Bitkassa {
             response_text = representation.getText();
         } catch (IOException e) {
             e.printStackTrace();
-            throw new APIException(e.getMessage());
+            throw new BitkassaException(e.getMessage());
         }
 
         if (response_text == null) {
-            throw new APIException("Could not extract the text from the representation");
+            throw new BitkassaException("Could not extract the text from the representation");
         }
         System.out.println("response_text: " + response_text);
 
@@ -132,12 +132,12 @@ public class Bitkassa {
             status = mapper.readValue(response_text, PaymentStatus.class);
         } catch (IOException e) {
             e.printStackTrace();
-            throw new APIException(e.getMessage());
+            throw new BitkassaException(e.getMessage());
         }
 
         if (status.getSuccess() != true)
         {
-            throw new APIException(status.getError());
+            throw new BitkassaException(status.getError());
         }
 
         return status;
@@ -152,7 +152,7 @@ public class Bitkassa {
     }
 
 
-    Representation callBitkassaApi(Object object) throws APIException {
+    Representation callBitkassaApi(Object object) throws BitkassaException {
         ObjectMapper mapper = new ObjectMapper();
 
         byte[] dataJSONBytes = new byte[0];
@@ -160,7 +160,7 @@ public class Bitkassa {
             dataJSONBytes = mapper.writeValueAsBytes(object);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
-            throw new APIException(e.getMessage());
+            throw new BitkassaException(e.getMessage());
         }
 
         String dataJSONRaw = new String(dataJSONBytes);
@@ -186,7 +186,7 @@ public class Bitkassa {
         Response response = client.handle(request);
         Representation representation = response.getEntity();
         if(representation == null) {
-            throw new APIException("Did not get a valid response from the API");
+            throw new BitkassaException("Did not get a valid response from the API");
         }
 
         return representation;
