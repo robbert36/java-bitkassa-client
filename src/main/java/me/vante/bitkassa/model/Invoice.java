@@ -2,6 +2,7 @@ package me.vante.bitkassa.model;
 
 import lombok.Data;
 
+
 /**
  * Created by robbertcoeckelbergh on 3/11/16.
  */
@@ -14,5 +15,6 @@ public class Invoice {
     private int amount;
     private String bitcoin_url;
     private int expire;
-    private boolean success;
+    private Boolean success;
+    private String error;
 }

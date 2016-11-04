@@ -1,10 +1,7 @@
 package me.vante.bitkassa.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import me.vante.bitkassa.model.APIException;
-import me.vante.bitkassa.model.Actions;
-import me.vante.bitkassa.model.InvoiceRequest;
-import me.vante.bitkassa.model.Invoice;
+import me.vante.bitkassa.model.*;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.util.encoders.Base64;
 import org.restlet.Client;
@@ -15,15 +12,17 @@ import org.restlet.representation.Representation;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 
-
 /**
  * Created by robbertcoeckelbergh on 2/11/16.
  */
+
 public class Bitkassa {
+
     public static final String BITKASSA_URL = "https://www.bitkassa.nl/api/v1";
 
     private String _merchantId = "";
@@ -45,31 +44,88 @@ public class Bitkassa {
     }
 
     public Invoice createInvoice(InvoiceRequest invoiceRequest) throws APIException, IOException {
-        invoiceRequest.setAction(Actions.START_PAYMENT);
+        invoiceRequest.setAction(Action.START_PAYMENT);
         invoiceRequest.setMerchant_id(_merchantId);
 
+        //Input check
+        if (invoiceRequest.getAmount() == null || invoiceRequest.getAmount().compareTo(BigInteger.ZERO) == -1 ||
+                invoiceRequest.getCurrency() == null || (! invoiceRequest.getCurrency().equals("BTC") && ! invoiceRequest.getCurrency().equals("EUR"))) {
+            throw new APIException("Invalid input to create an invoice");
+        }
+
         Representation representation = callBitkassaApi(invoiceRequest);
-        representation.
+        if (representation == null) {
+            throw new APIException("The resulting representation of the api call is null");
+        }
+
         String response_text = representation.getText();
+        if (response_text == null) {
+            throw new APIException("Could not extract the text from the representation");
+        }
 
         System.out.println("response_text: " + response_text);
         ObjectMapper mapper = new ObjectMapper();
-        Invoice invoice = mapper.readValue(representation.getText(), Invoice.class);
+        Invoice invoice = mapper.readValue(response_text, Invoice.class);
 
+        if (invoice.getSuccess() != true)
+        {
+            throw new APIException(invoice.getError());
+        }
 
         return invoice;
     }
 
-    private String generateAuthentication(String secretAPIKey, String data) {
-        String unixtime;
+    public boolean verifyAuthentication(String authentication, String raw_data) {
+        byte[] data_bytes = Base64.decode(raw_data);
+        String data = new String(data_bytes);
+
+        String unixtime = authentication.substring(64);
+        String verify = generateAuthentication(data, unixtime);
+
+        boolean authenticated = verify.equalsIgnoreCase(authentication);
+
+        return authenticated;
+    }
+
+    public PaymentStatus getPaymentStatus(String paymentId) throws APIException, IOException {
+        if (paymentId == null)
+        {
+            throw new APIException("Invalid input to get payment status");
+        }
+
+        PaymentStatusRequest request = new PaymentStatusRequest();
+        request.setAction(Action.PAYMENT_STATUS);
+        request.setMerchant_id(_merchantId);
+        request.setPayment_id(paymentId);
+
+        Representation representation = callBitkassaApi(request);
+
+        if (representation == null) {
+            throw new APIException("The resulting representation of the api call is null");
+        }
+
+        String response_text = representation.getText();
+        if (response_text == null) {
+            throw new APIException("Could not extract the text from the representation");
+        }
+
+        System.out.println("response_text: " + response_text);
+        ObjectMapper mapper = new ObjectMapper();
+        PaymentStatus status = mapper.readValue(response_text, PaymentStatus.class);
+
+        if (status.getSuccess() != true)
+        {
+            throw new APIException(status.getError());
+        }
+
+        return status;
+    }
+
+    private String generateAuthentication(String data, String unixtime) {
         MessageDigest md;
 
-        Date now = new Date();
-        Long longTime = new Long(now.getTime()/1000);
-        unixtime = longTime.toString();
-
         StringBuilder builder = new StringBuilder();
-        builder.append(secretAPIKey);
+        builder.append(_secretAPIKey);
         builder.append(data);
         builder.append(unixtime);
 
@@ -95,6 +151,16 @@ public class Bitkassa {
         return digestString + unixtime;
     }
 
+    private String generateAuthentication(String data) {
+        String unixtime;
+
+        Date now = new Date();
+        Long longTime = new Long(now.getTime()/1000);
+        unixtime = longTime.toString();
+
+        return generateAuthentication(data, unixtime);
+    }
+
 
     Representation callBitkassaApi(Object object) throws IOException, APIException {
         ObjectMapper mapper = new ObjectMapper();
@@ -105,7 +171,7 @@ public class Bitkassa {
         System.out.println("DataJSONRaw: " + dataJSONRaw);
         System.out.println("DataJSON: " + dataJSON);
 
-        String authentication = generateAuthentication(_secretAPIKey, dataJSONRaw);
+        String authentication = generateAuthentication(dataJSONRaw);
         System.out.println("Authentication: " + authentication);
 
         Client client = new Client(Protocol.HTTPS);
@@ -126,9 +192,8 @@ public class Bitkassa {
             throw new APIException("Did not get a valid response from the API");
         }
 
-        representation.write(System.out);
-
         return representation;
     }
+
 
 }

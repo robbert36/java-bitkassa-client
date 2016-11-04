@@ -25,7 +25,7 @@ public class CreateInvoiceTest {
     @Test
     public void createInvoiceFakeTest() {
         //Bitkassa bitkassa = new Bitkassa(MERCHANT_ID, API_SECRET, API_URL);
-        Bitkassa bitkassa = new Bitkassa(MERCHANT_ID, API_SECRET);
+        Bitkassa bitkassa = new Bitkassa(MERCHANT_ID, API_SECRET, API_URL);
         InvoiceRequest invoiceRequest = new InvoiceRequest(new BigInteger("10000"), "BTC", "Testinvoice", RETURN_URL, UPDATE_URL, "TestMetainfo");
         try {
             Invoice response = bitkassa.createInvoice(invoiceRequest);
