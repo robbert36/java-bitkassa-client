@@ -18,7 +18,7 @@ public class Authentication {
         Long longTime = new Long(now.getTime()/1000);
         unixtime = longTime.toString();
 
-        return generateAuthentication(data, unixtime);
+        return generateAuthentication(secretAPIKey, data, unixtime);
     }
 
     protected static String generateAuthentication(String secretAPIKey, String data, String unixtime) {
